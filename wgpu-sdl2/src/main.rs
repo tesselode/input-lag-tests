@@ -1,14 +1,16 @@
 mod vertex;
 
+use std::time::Duration;
+
 use glam::{Affine2, Vec2};
 use sdl2::{event::Event, keyboard::Keycode};
 use vertex::Vertex;
 use wgpu::{
 	include_wgsl,
 	util::{BufferInitDescriptor, DeviceExt},
-	BindGroupDescriptor, BindGroupLayoutDescriptor, BufferUsages, Color, ColorTargetState,
-	ColorWrites, CommandEncoderDescriptor, DeviceDescriptor, FragmentState, Instance,
-	InstanceDescriptor, LoadOp, MultisampleState, Operations, PipelineLayoutDescriptor,
+	Backends, BindGroupDescriptor, BindGroupLayoutDescriptor, BufferUsages, Color,
+	ColorTargetState, ColorWrites, CommandEncoderDescriptor, DeviceDescriptor, FragmentState,
+	Instance, InstanceDescriptor, LoadOp, MultisampleState, Operations, PipelineLayoutDescriptor,
 	PrimitiveState, RenderPassColorAttachment, RenderPipelineDescriptor, RequestAdapterOptions,
 	TextureFormat, TextureViewDescriptor, VertexState,
 };
@@ -18,7 +20,10 @@ fn main() {
 	let video = sdl.video().unwrap();
 	let window = video.window("Input Lag Test", 800, 600).build().unwrap();
 	let (width, height) = window.size();
-	let instance = Instance::new(InstanceDescriptor::default());
+	let instance = Instance::new(InstanceDescriptor {
+		backends: Backends::DX12,
+		..Default::default()
+	});
 	let surface = unsafe { instance.create_surface(&window) }.unwrap();
 	let adapter =
 		pollster::block_on(instance.request_adapter(&RequestAdapterOptions::default())).unwrap();
@@ -67,6 +72,7 @@ fn main() {
 		multiview: None,
 	});
 	let surface_caps = surface.get_capabilities(&adapter);
+	dbg!(surface_caps.present_modes);
 	let surface_format = surface_caps
 		.formats
 		.iter()
@@ -78,7 +84,7 @@ fn main() {
 		format: surface_format,
 		width,
 		height,
-		present_mode: wgpu::PresentMode::Fifo,
+		present_mode: wgpu::PresentMode::Mailbox,
 		alpha_mode: wgpu::CompositeAlphaMode::Auto,
 		view_formats: Vec::default(),
 	};
