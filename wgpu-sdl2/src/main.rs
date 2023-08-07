@@ -22,6 +22,7 @@ fn main() {
 	let surface = unsafe { instance.create_surface(&window) }.unwrap();
 	let adapter =
 		pollster::block_on(instance.request_adapter(&RequestAdapterOptions::default())).unwrap();
+	dbg!(adapter.get_info().name);
 	let (device, queue) =
 		pollster::block_on(adapter.request_device(&DeviceDescriptor::default(), None)).unwrap();
 	let shader = device.create_shader_module(include_wgsl!("shader.wgsl"));
