@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use glam::{Affine2, Vec2};
 use sdl2::{event::Event, keyboard::Keycode};
+use spin_sleep::LoopHelper;
 use vertex::Vertex;
 use wgpu::{
 	include_wgsl,
@@ -84,14 +85,19 @@ fn main() {
 		format: surface_format,
 		width,
 		height,
-		present_mode: wgpu::PresentMode::Mailbox,
+		present_mode: wgpu::PresentMode::Fifo,
 		alpha_mode: wgpu::CompositeAlphaMode::Auto,
 		view_formats: Vec::default(),
 	};
 	surface.configure(&device, &config);
 
+	let mut loop_helper = LoopHelper::builder()
+		.report_interval_s(0.5)
+		.build_with_target_rate(59.0);
+
 	let mut event_pump = sdl.event_pump().unwrap();
 	loop {
+		loop_helper.loop_start();
 		for event in event_pump.poll_iter() {
 			if let Event::Quit { .. }
 			| Event::KeyDown {
@@ -150,5 +156,7 @@ fn main() {
 		}
 		queue.submit([encoder.finish()]);
 		frame.present();
+		dbg!(loop_helper.report_rate());
+		loop_helper.loop_sleep();
 	}
 }

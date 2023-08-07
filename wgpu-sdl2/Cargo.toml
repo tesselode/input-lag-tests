@@ -12,4 +12,5 @@ pollster = "0.3.0"
 sdl2 = { git = "https://github.com/Rust-SDL2/rust-sdl2", rev = "9b16758", features = [
 	"raw-window-handle",
 ] }
+spin_sleep = "1.1.1"
 wgpu = "0.17.0"
